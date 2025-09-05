@@ -1,0 +1,23 @@
+{
+    "name": "ai-rate-limit",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "node src/index.js",
+        "migrate": "node scripts/migrate.js",
+        "test:guest": "node tests/test_guest.js",
+        "test:free": "node tests/test_free.js",
+        "test:premium": "node tests/test_premium.js"
+    },
+    "dependencies": {
+        "@ai-sdk/google": "^2.0.12",
+        "ai": "^5.0.33",
+        "axios": "^1.11.0",
+        "bcrypt": "^6.0.0",
+        "dotenv": "^17.2.2",
+        "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "node-cache": "^5.1.2",
+        "node-cron": "^4.2.1",
+        "sqlite3": "^5.1.7"
+    }
+}
