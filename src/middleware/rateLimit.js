@@ -14,14 +14,18 @@ module.exports = async (req, res, next) => {
         const limit = await RateLimitService.getTierLimit(tier);
         const usage = await RateLimitService.getRateLimit(identifier);
 
+        const remaining = Math.max(limit - usage.request_count, 0);
+
         if (usage.request_count >= limit) {
-            if (tier === 'guest') {
-                return res.status(429).json({
-                    error: 'Rate limit exceeded. Please sign up or log in to continue.',
-                });
-            }
+            const message =
+                tier === 'guest'
+                    ? `Too many requests. Guest users can make ${limit} requests per hour. Please sign up or log in to continue.`
+                    : `Too many requests. ${tier.charAt(0).toUpperCase() + tier.slice(1)} users can make ${limit} requests per hour.`;
+
             return res.status(429).json({
-                error: `Rate limit exceeded. ${tier} users are limited to ${limit} requests per hour.`,
+                success: false,
+                error: message,
+                remaining_requests: 0,
             });
         }
 
@@ -30,6 +34,10 @@ module.exports = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Rate limit error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error',
+            remaining_requests: 0,
+        });
     }
 };

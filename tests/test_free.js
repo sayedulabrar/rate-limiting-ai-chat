@@ -41,17 +41,19 @@ async function testFree() {
             'Authorization': `Bearer ${token}`
         }
     };
-    const data = { prompt: 'Hello, AI!' };
+    const data = { prompt: 'just checking rate limit. So response with only one word: working!' };
 
     for (let i = 1; i <= 10; i++) {
         console.log(`Request ${i}: Sending POST to ${baseUrl}/api/ai/chat`);
         try {
             const response = await axios.post(`${baseUrl}/api/ai/chat`, data, config);
-            console.log(`Request ${i}: Status ${response.status} - Response: ${response.data}`);
+            console.log(`Request ${i}: Status ${response.status} - Response: ${JSON.stringify(response.data)}`);
         } catch (error) {
             console.error(`Request ${i}: Failed - Status: ${error.response?.status || 'N/A'}, Error: ${error.response?.data?.error || error.message}`);
         }
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
     }
 
     console.log('\n=== Free Tier Test Completed ===');

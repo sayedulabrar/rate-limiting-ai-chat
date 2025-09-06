@@ -25,21 +25,13 @@ async function testPremium() {
 
     // Step 2: Upgrade to premium (manually update tier in database)
     console.log('\nStep 2: Upgrading user to premium tier');
-    const db = new sqlite3.Database(config.DATABASE_PATH);
     try {
-        await new Promise((resolve, reject) => {
-            db.run('UPDATE users SET tier = ? WHERE email = ?', ['premium', user.email], (err) => {
-                if (err) reject(err);
-                resolve();
-            });
-        });
-        console.log('User upgraded to premium tier');
+        const response = await axios.post(`${baseUrl}/api/user-tier`, { email: user.email });
+        console.log(`User-tier update: Status ${response.status} - Response: ${JSON.stringify(response.data)}`);
     } catch (error) {
-        console.error('Failed to upgrade user:', error);
-        db.close();
+        console.error(`User-tier update failed - Status: ${error.response?.status || 'N/A'}, Error: ${error.response?.data?.error || error.message}`);
         return;
     }
-    db.close();
 
     // Step 3: Login to get updated JWT with premium tier
     console.log('\nStep 3: Logging in user:', user.email);
@@ -60,17 +52,20 @@ async function testPremium() {
             'Authorization': `Bearer ${token}`
         }
     };
-    const data = { prompt: 'Hello, AI!' };
+    const data = { prompt: 'just checking rate limit. So response with only 2 word: working now!' };
 
     for (let i = 1; i <= 12; i++) {
         console.log(`Request ${i}: Sending POST to ${baseUrl}/api/ai/chat`);
         try {
             const response = await axios.post(`${baseUrl}/api/ai/chat`, data, config);
-            console.log(`Request ${i}: Status ${response.status} - Response: ${response.data}`);
+            console.log(`Request ${i}: Status ${response.status} - Response: ${JSON.stringify(response.data)}`);
         } catch (error) {
             console.error(`Request ${i}: Failed - Status: ${error.response?.status || 'N/A'}, Error: ${error.response?.data?.error || error.message}`);
         }
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+
+
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
     }
 
     console.log('\n=== Premium Tier Test Completed ===');

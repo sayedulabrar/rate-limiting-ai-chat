@@ -10,6 +10,8 @@ const config = require('./config/app');
 const app = express();
 const db = new sqlite3.Database(config.DATABASE_PATH);
 
+// console.log("Loaded Gemini API Key:", config.GEMINI_API_KEY ? config.GEMINI_API_KEY : "Missing");
+
 app.use(express.json());
 
 // JWT auth middleware
@@ -18,7 +20,7 @@ app.use((req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, config.JWT_SECRET);
             req.user = { id: decoded.id, tier: decoded.tier };
         } catch (error) {
             console.error('JWT verification failed:', error.message);
@@ -63,7 +65,7 @@ app.post('/api/signup', async (req, res) => {
         });
 
         // Generate JWT
-        const token = jwt.sign({ id: result.id, tier: 'free' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: result.id, tier: 'free' }, config.JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ message: 'Signup successful', token });
     } catch (error) {
@@ -98,7 +100,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Generate JWT
-        const token = jwt.sign({ id: user.id, tier: user.tier }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, tier: user.tier }, config.JWT_SECRET, { expiresIn: '1h' });
 
         res.json({ message: 'Login successful', token });
     } catch (error) {
@@ -112,6 +114,26 @@ app.use('/api/ai', aiRoutes);
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the AI API' });
 });
+
+app.post('/api/user-tier', async(req,res)=>{
+    const { email } = req.body;
+    if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+    }
+
+    try {
+        await new Promise((resolve, reject) => {
+            db.run('UPDATE users SET tier = ? WHERE email = ?', ['premium', email], (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+        res.json({ message: 'User upgraded to premium tier' });
+    } catch (error) {
+        console.error('Failed to upgrade user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
 
 // Schedule cleanup every 60 minutes
 cron.schedule('0 * * * *', async () => {
