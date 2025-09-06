@@ -7,15 +7,17 @@
 
 The AI Chat Rate Limiter is built using **Node.js** and **Express**, with **SQLite** for persistent storage. The architecture is designed to efficiently enforce rate limits while minimizing AI usage costs.
 
+
 ### Components
 
 * **Express Server**: Handles HTTP requests and routes.
 * **Rate Limiting Middleware**: Checks user/IP usage before allowing access to the AI endpoint.
 * **User Authentication**: JWT-based login system for identifying users.
-* **In-Memory Cache**: Tracks request counts per user/IP for fast access and low latency.
+* **In-Memory Cache**: Tracks request counts per user/IP for fast access and low latency. Database calls are minimized by **only writing usage data to SQLite during scheduled cleanup**, reducing unnecessary database traffic.
 * **Persistent Database (SQLite)**: Stores user accounts, tiers, and usage for reliability and recovery.
 * **Vercel AI SDK Integration**: Connects to Gemini AI for chat responses.
-* **Scheduled Cleanup**: Removes inactive users from memory to optimize resources.
+* **Scheduled Cleanup (Cron Job)**: A cron job runs at regular intervals to flush in-memory usage data to the database and remove inactive users from memory. This ensures that memory usage stays low and database updates are batched efficiently rather than happening on every request.
+
 
 ### Request Flow
 
