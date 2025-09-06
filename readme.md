@@ -39,6 +39,15 @@ The AI Chat Rate Limiter is built using **Node.js** and **Express**, with **SQLi
 
 ## Getting Started
 
+### Add .env file at root level
+
+```bash
+DATABASE_PATH= Your_SQLITE_Database_Path
+PORT=3000 
+GOOGLE_GENERATIVE_AI_API_KEY=Your_API_Key
+JWT_SECRET=Your_JWT_SECRET
+```
+
 ### Install Dependencies
 
 ```bash
